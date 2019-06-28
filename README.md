@@ -7,6 +7,8 @@ cli-kintone is a command line utility for exporting and importing kintone App da
 # How to Build
 
 ## Requirement
+* Node v10
+* NPM
 
 ### Getting the source code
 
