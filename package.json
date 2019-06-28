@@ -1,0 +1,39 @@
+{
+  "name": "cli-kintone",
+  "version": "1.0.0",
+  "description": "Import and export tool",
+  "main": "dist/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc ",
+    "package:mac": "./node_modules/.bin/pkg dist/main.js --targets node10-macos-x64 --output build/mac/cli-kintone",
+    "package:win32": "./node_modules/.bin/pkg dist/main.js --targets node10-win32 --output build/win32/cli-kintone.exe",
+    "package:win64": "./node_modules/.bin/pkg dist/main.js --targets node10-win-x64 --output build/win64/cli-kintone.exe",
+    "package:linux": "./node_modules/.bin/pkg dist/main.js --targets node10-linux-x64 --output build/linux/cli-kintone",
+    "package:all": "yarn package:mac && yarn package:win64 && yarn package:win86 && yarn package:linux"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "cli-kintone": "./dist/main.js"
+  },
+  "author": "kintone",
+  "license": "MIT",
+  "dependencies": {
+    "@kintone/kintone-js-sdk": "^0.3.1",
+    "chalk": "^2.4.2",
+    "commander": "^2.20.0",
+    "csv-stringify": "^5.3.0",
+    "form-data": "^2.4.0",
+    "iconv-lite": "^0.4.24",
+    "inquirer": "^6.4.1"
+  },
+  "devDependencies": {
+    "@cybozu/eslint-config": "^5.1.0",
+    "@types/csv-stringify": "^1.4.3",
+    "@types/inquirer": "^6.0.3",
+    "@types/node": "^12.0.2",
+    "eslint": "^6.0.0",
+    "pkg": "^4.4.0",
+    "typescript": "^3.4.5"
+  }
+}
