@@ -1,7 +1,6 @@
 import Connection from "../../includes/connection";
 import FileExport from '../Export/exportFiles';
-import common from '../../includes/common';
-import { resolve } from "path";
+import {getFileSync, getValidPath} from '../../includes/common';
 
 const config = require('../../constant/config');
 const kintone = require('@kintone/kintone-js-sdk');
@@ -100,7 +99,7 @@ class RecordExport {
             //   break;
             // }
             if(this._props.dirPath){
-                const fileFolderBK = common.getFileSync(pathFile + '/' + this._props.dirPath);
+                const fileFolderBK = getFileSync(pathFile + '/' + this._props.dirPath);
                 const fileDownload = this.fileExport.downloadFileByRecord(records[i], records[i].$id.value, fileFolderBK, appID);
                 filePromiseAll.push(fileDownload);
             }
@@ -164,7 +163,7 @@ class RecordExport {
                 writeJsonPromiseAll.push(writeJsonPromise);
                 
                 if(this._props.dirPath){
-                    const fileFolderBK = common.getFileSync(pathFile + '/' + this._props.dirPath);
+                    const fileFolderBK = getFileSync(pathFile + '/' + this._props.dirPath);
                     const fileDownload = this.fileExport.downloadFileByRecord(records[i], records[i].$id.value, fileFolderBK, appID);
                     filePromiseAll.push(fileDownload);
                 }
@@ -195,7 +194,7 @@ class RecordExport {
 
   createRecordCsvContent(record: any, fileFolder: string, header: Array<any>) {
     let csvRowData: any = {};
-    const validFileFolder = common.getFileSync(fileFolder + '/file');
+    const validFileFolder = getFileSync(fileFolder + '/file');
     csvRowData = Object.assign({}, this.parseRecordCsvContent(record, record.$id.value, validFileFolder));
     const tableDatas: Array<any> = [];
     const tableCode: Array<string> = [];
@@ -255,7 +254,7 @@ class RecordExport {
         case 'CREATOR':
           break;
         case 'FILE':
-          folder = common.getValidPath(folder + '/' + key + '_' + rowID + '/');
+          folder = getValidPath(folder + '/' + key + '_' + rowID + '/');
           for (let i = 0; i < cellValue.length; i++) {
             const filePath = folder + cellValue[i].name;
             tmp.push(filePath);

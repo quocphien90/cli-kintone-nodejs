@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import validator from '../../includes/validator'
 import Connection from "../../includes/connection";
 import RecordExport from '../Export/exportRecords'
-import common from '../../includes/common';
+import {getEncodingCode} from '../../includes/common';
 
 const path = require('path');
 const rimraf = require('rimraf');
@@ -41,7 +41,7 @@ const exportCommand = async (program: CommanderStatic, options: any) => {
         }
 
         const currentWorkingDir = process.cwd();        ;
-        const encoding = common.getEncodingCode(options.encoding);
+        const encoding = getEncodingCode(options.encoding);
         const formatFile = options.outputFormat ? options.outputFormat : 'csv';
         const recordExport = new RecordExport({
             connectionModule: connectionModule, 

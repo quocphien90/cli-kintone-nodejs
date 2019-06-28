@@ -1,5 +1,5 @@
 import Connection from "../../includes/connection";
-import common from '../../includes/common';
+import {getFileSync, getUniqueFileName} from '../../includes/common';
 
 const config = require('../../constant/config');
 const kintone = require('@kintone/kintone-js-sdk');
@@ -65,9 +65,9 @@ class FileExport {
     try {
       const files: Array<any> = this.getFileByRecord(record);
       for (let i = 0; i < files.length; i++) {
-        let backupPath = common.getFileSync(fileFolderBK);
-        backupPath = common.getFileSync(backupPath + '/' + files[i].fieldCode + '_' + recordID);
-        let fileName = common.getUniqueFileName(files[i].name, backupPath);
+        let backupPath = getFileSync(fileFolderBK);
+        backupPath = getFileSync(backupPath + '/' + files[i].fieldCode + '_' + recordID);
+        let fileName = getUniqueFileName(files[i].name, backupPath);
         backupPath = util.format("%s%s%s", backupPath, path.sep, fileName)
         
         //logger.info(config.logMsg.M009.replace('[app_id]', appID).replace('[filekey]', files[i].fileKey));
@@ -84,7 +84,7 @@ class FileExport {
     } catch (err) {
       let msg = '';
       if (err instanceof kintone.KintoneAPIException) {
-        //msg = this.common.getAppWithErrLog(config.logMsg.M011, appID, err.get().message);
+        //msg = this.getAppWithErrLog(config.logMsg.M011, appID, err.get().message);
         //logger.error(msg);
       } else {
         //msg = this._props.commonModule.getAppWithErrLog(config.logMsg.M011, appID, err);
