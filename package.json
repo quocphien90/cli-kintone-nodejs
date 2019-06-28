@@ -10,7 +10,7 @@
     "package:win32": "pkg dist/main.js --targets node10-win32 --output build/win32/cli-kintone.exe",
     "package:win64": "pkg dist/main.js --targets node10-win-x64 --output build/win64/cli-kintone.exe",
     "package:linux": "pkg dist/main.js --targets node10-linux-x64 --output build/linux/cli-kintone",
-    "package:all": "yarn package:mac && yarn package:win64 && yarn package:win86 && yarn package:linux"
+    "package:all": "yarn package:mac && yarn package:win64 && yarn package:win32 && yarn package:linux"
   },
   "preferGlobal": true,
   "bin": {
