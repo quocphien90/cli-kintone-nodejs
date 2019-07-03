@@ -6,16 +6,16 @@ jobs: # a basic unit of work in a run
      # the list of pre-built CircleCI images on dockerhub.
        - image: circleci/node:chakracore-10.13
   steps:
-       - checkout
-       - run:
+      - checkout
+      - run:
           name: Install dependencies
           command: |
             npm install
-        - run:
+      - run:
           name: Run build tsc to es6
           command: |
             npm run build
-        - run:
+      - run:
           name: Compile nodejs to binaries
           command: |
             npm run package:all
