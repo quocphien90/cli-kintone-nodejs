@@ -5,14 +5,24 @@ jobs: # a basic unit of work in a run
      # see circleci.com/docs/2.0/circleci-images/ for
      # the list of pre-built CircleCI images on dockerhub.
        - image: circleci/node:chakracore-10.13
-    working_directory: /tmp
+    working_directory: /build_tmp
     steps:
       - checkout
       - run: mkdir -p workspace
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
       - run:
           name: Install dependencies
           command: |
             npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
       - run:
           name: Run build tsc to es6
           command: |
@@ -45,12 +55,12 @@ jobs: # a basic unit of work in a run
       - image: cibuilds/github:0.10
     steps:
       - attach_workspace:
-          at: /workspace/build
+          at: /build_tmp/workspace/build
       - run:
           name: "Publish Release on GitHub"
           command: |
             VERSION=0.1.0
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} build_tmp/workspace/build/
 workflows:
   version: 2
   build_and_deploy:
