@@ -17,14 +17,18 @@ type ConnectionProps = {
 }
 
 class Connection {
-    protected _props: ConnectionProps = {
-        ...this._props
-    };
+    protected _props: ConnectionProps;
 
     constructor(params: ConnectionProps) {
-        if (params) {
-          this._props = {...this._props, ...params};
+       this._props = { 
+        ...{
+          appID:0,
+          domain: ''
         }
+      };
+      if (params) {
+          this._props = {...this._props, ...params};
+      }
     }
 
     public getKintoneConnection(): object {

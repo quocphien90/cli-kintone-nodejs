@@ -11,7 +11,7 @@ const util = require('util')
 const path = require('path')
 
 type RecordExportProps = {
-    connectionModule: Connection;
+    connectionModule: Connection | null;
     encoding: string,
     query?: string,
     fields: Array<string>,
@@ -25,15 +25,19 @@ class RecordExport {
     protected appModule: any;
     protected fileExport: FileExport;
     private timer: Date = new Date();
-    protected _props: RecordExportProps = {
-        ...this._props,
+    protected _props: RecordExportProps;
+      
+  constructor(params: RecordExportProps) {
+    this._props = { 
         ...{
+            encoding:'',
+            fields: [],
+            connectionModule: null,
             timer: new Date(),
             formatFile: 'csv',
             query: ''
         }
     };
-  constructor(params: RecordExportProps) {
     if (params) {
         this._props = {...this._props, ...params};
     }

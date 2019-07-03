@@ -7,7 +7,7 @@ const util = require('util')
 const path = require('path')
 
 type FileExportProps = {
-    connectionModule: Connection;
+    connectionModule: Connection | null;
     connection: any;
 }
 
@@ -15,13 +15,16 @@ class FileExport {
   protected fileModule: any;
   protected connection: any;
   private timer: Date = new Date();
-  protected _props: FileExportProps = {
-    ...this._props,
-    ...{
-        timer: new Date(),
-    }
-};
+  protected _props: FileExportProps;
+
   constructor(params: FileExportProps) {
+    this._props =  { 
+      ...{
+          connection: null,
+          connectionModule: null,
+          timer: new Date(),
+      }
+    }
     if (params) {
         this._props = {...this._props, ...params};
     }
