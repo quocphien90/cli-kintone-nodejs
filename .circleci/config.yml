@@ -21,7 +21,16 @@ jobs: # a basic unit of work in a run
             npm run package:all
       - store_artifacts:
           path: build/mac/cli-kintone
-          destination: mac
+          destination: cli-kintone-macos
+      - store_artifacts:
+          path: build/win32/cli-kintone.exe
+          destination: cli-kintone-x86.exe
+      - store_artifacts:
+          path: build/win64/cli-kintone.exe
+          destination: cli-kintone-x64.exe
+      - store_artifacts:
+          path: build/linux/cli-kintone
+          destination: cli-kintone-linux
 workflows:
   version: 2
   build_and_deploy:
