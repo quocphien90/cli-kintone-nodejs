@@ -4,10 +4,7 @@ import validator from '../../includes/validator'
 import Connection from "../../includes/connection";
 import RecordExport from '../Export/exportRecords'
 import {getEncodingCode} from '../../includes/common';
-
 const path = require('path');
-const rimraf = require('rimraf');
-const fs = require('fs')
 
 const exportCommand = async (program: CommanderStatic, options: any) => {
     let error = validator.exportValidator(options)
@@ -40,14 +37,20 @@ const exportCommand = async (program: CommanderStatic, options: any) => {
             
         }
 
-        const currentWorkingDir = process.cwd();        ;
+        const currentWorkingDir = '';//process.cwd();
         const encoding = getEncodingCode(options.encoding);
         const formatFile = options.outputFormat ? options.outputFormat : 'csv';
+        
+        let fieldsArray: Array<string> = [];
+        if(options.fields){
+            fieldsArray = options.fields.split(",").map( (value: string) => { return  value.trim()});
+        }
+
         const recordExport = new RecordExport({
             connectionModule: connectionModule, 
             encoding: encoding,
             query: options.query,
-            fields: [],
+            fields: fieldsArray,
             formatFile: formatFile,
             dirPath: options.dirPath,
         });

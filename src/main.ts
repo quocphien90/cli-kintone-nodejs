@@ -22,7 +22,7 @@ program
     .option('-U, --basicUsername <basicUsername>', 'Basic authentication user name', '')
     .option('-P, --basicPassword <basicPassword>', 'Basic authentication password', '')
     .option('-q, --query <query>', 'Query string', '')
-    .option('-c, --column <fields>', 'Fields to export (comma separated). Specify the field code name', '')
+    .option('-c, --fields <fields>', 'Fields to export (comma separated). Specify the field code name', '')
     .option('-f, --filePath <filePath>', 'Input file path', '')
     .option('-b, --dirPath <dirPath>', 'Attachment file directory', '')
     .option('-D, --delete', 'Delete records before insert. You can specify the deleting record condition by option "-q"', '')

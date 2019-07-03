@@ -35,7 +35,7 @@ class FileExport {
     return fileKeys;
   }
 
-  getFileRecursive(record: any, fileDatas:Array<string> = []): Array<string> {
+  getFileRecursive(record: any, fileDatas:Array<any> = []): Array<any> {
     let fileFields = fileDatas || [];
     Object.keys(record).forEach(key => {
       if (record[key].type === 'FILE') {
@@ -46,6 +46,9 @@ class FileExport {
         const tableData = record[key].value;
         for (let i = 0; i < tableData.length; i++) {
             const fileSubFieldValues = this.getFileRecursive(tableData[i].value, fileDatas)
+            if(fileSubFieldValues.length > 0){
+                fileSubFieldValues[0].rowSubFieldNumber = i;
+            }
             fileFields = fileFields.concat(fileSubFieldValues);
         }
       }
@@ -65,10 +68,16 @@ class FileExport {
     try {
       const files: Array<any> = this.getFileByRecord(record);
       for (let i = 0; i < files.length; i++) {
-        let backupPath = getFileSync(fileFolderBK);
-        backupPath = getFileSync(backupPath + '/' + files[i].fieldCode + '_' + recordID);
-        let fileName = getUniqueFileName(files[i].name, backupPath);
-        backupPath = util.format("%s%s%s", backupPath, path.sep, fileName)
+        let downloaFolderPath = getFileSync(fileFolderBK);
+        let rowSubFieldNumber = ''
+        if(typeof files[i].rowSubFieldNumber == 'number'){
+            rowSubFieldNumber = util.format('-%s',files[i].rowSubFieldNumber.toString())
+        }
+        downloaFolderPath = getFileSync(downloaFolderPath + '/' + files[i].fieldCode + '-' + recordID + rowSubFieldNumber);
+        let fileName = getUniqueFileName(files[i].name, downloaFolderPath);
+        let pathDownloadFileName = util.format("%s%s%s", downloaFolderPath, path.sep, fileName)
+        files[i].name = fileName
+        files[i].folderPath  = util.format("%s-%s%s", files[i].fieldCode, recordID, rowSubFieldNumber)
         
         //logger.info(config.logMsg.M009.replace('[app_id]', appID).replace('[filekey]', files[i].fileKey));
         const current = new Date();
@@ -77,10 +86,10 @@ class FileExport {
           this.fileModule = new kintone.File(conn);
           this.timer = new Date();
         }
-        await this.fileModule.download(files[i].fileKey, backupPath);
+        await this.fileModule.download(files[i].fileKey, pathDownloadFileName);
         // logger.info(config.logMsg.M010.replace('[app_id]', appID).replace('[filekey]', files[i].fileKey));
       }
-      return true;
+      return Promise.resolve();
     } catch (err) {
       let msg = '';
       if (err instanceof kintone.KintoneAPIException) {

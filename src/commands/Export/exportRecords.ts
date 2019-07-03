@@ -1,6 +1,6 @@
 import Connection from "../../includes/connection";
 import FileExport from '../Export/exportFiles';
-import {getFileSync, getValidPath} from '../../includes/common';
+import {getFileSync, getValidPath, getUniqueFileName} from '../../includes/common';
 
 const config = require('../../constant/config');
 const kintone = require('@kintone/kintone-js-sdk');
@@ -8,12 +8,13 @@ const fs = require('fs');
 const stringify = require('csv-stringify');
 const iconv = require('iconv-lite');
 const util = require('util')
+const path = require('path')
 
 type RecordExportProps = {
     connectionModule: Connection;
     encoding: string,
     query?: string,
-    fields?: Array<string>,
+    fields: Array<string>,
     formatFile?: string,
     dirPath?: string,
 }
@@ -55,7 +56,8 @@ class RecordExport {
     let newQuery = query + util.format(" limit %s offset %s", config.exportRowLimit, offset)
     return this.recordModule.getRecords(appId, newQuery, fields)
 	
- }
+  }
+  
 
   async exportRecordsToCSV(pathFile: string, appID: number) {
     try {
@@ -63,18 +65,29 @@ class RecordExport {
       let contents = [header];
       let csvLength = 0;
       let offset = 0;
-      const csvFile = util.format('%s/%s-%s.%s', pathFile, config.defaultCsvFileName, Date.now(), this._props.formatFile);
+      const csvFile = util.format('%s/%s-%s.%s', process.cwd(), config.defaultCsvFileName, Date.now(), this._props.formatFile);
       const filePromiseAll = [];
       const writeCsvPromiseAll = [];
       while(true) {
           const recordsResponse = await this.getRecords(appID, offset, this._props.fields);
           const records = recordsResponse.records
           const isEOF =  records.length < config.exportRowLimit;
+          let rowID = 0;
           for (let i = 0; i < records.length; i++) {
+              if(records[i].$id) {
+                rowID = records[i].$id.value
+              } else {
+                rowID = i
+              }
+              if(this._props.dirPath){
+                  const fileFolderBK = getFileSync(process.cwd() + '/' + this._props.dirPath);
+                  await this.fileExport.downloadFileByRecord(records[i], rowID, fileFolderBK, appID);
+                  //filePromiseAll.push(fileDownload);
+              }
+          
               const rows = this.createRecordCsvContent(records[i], pathFile, header);
               contents = contents.concat(rows);
               csvLength += this.getLenghtCsv(rows);
-              
               await fs.writeFileSync(csvFile, '');
               const writeCsvPromise = new Promise((resolve) => {
                 stringify(contents, (err: Error, output:string) => {
@@ -82,28 +95,15 @@ class RecordExport {
                 const buf = iconv.encode(output, this._props.encoding || config.defaultCharset);
                 fs.write(fd, buf, 0, buf.length, null, (error: any) => {
                     if (error) {
-                    //logger.error(err);
                         resolve(err);
                     }
                     fs.close(fd, () => {
-                    //const logMsg = this.common.getAppLog(config.logMsg.M022, appID).replace('[num_records]', records.length);
-                    //logger.info(logMsg);
                         resolve();
                     });
                 });
                 });
             });
             writeCsvPromiseAll.push(writeCsvPromise);
-            // if (csvLength >= config.csvLimit) {
-            //   //logger.error(config.logMsg.M025);
-            //   break;
-            // }
-            if(this._props.dirPath){
-                const fileFolderBK = getFileSync(pathFile + '/' + this._props.dirPath);
-                const fileDownload = this.fileExport.downloadFileByRecord(records[i], records[i].$id.value, fileFolderBK, appID);
-                filePromiseAll.push(fileDownload);
-            }
-            
           }
           offset += config.exportRowLimit
           if(isEOF) {
@@ -111,20 +111,13 @@ class RecordExport {
           }
           
         }
+        //await Promise.all(filePromiseAll);
         await Promise.all(writeCsvPromiseAll);
-        await Promise.all(filePromiseAll);
-      
-      
     } catch (err) {
-    //   if (err instanceof kintone.KintoneAPIException) {
-    //     const msg = this.common.getAppWithErrLog(config.logMsg.M008, appID, err.get().message);
-    //     logger.error(msg);
-    //   } else {
-    //     logger.error(err);
-    //   }
       return Promise.resolve(err);
     }
   }
+  
   async exportRecordsToJson(pathFile: string, appID: number) {
     try{
         const contents = '{"records": [';
@@ -138,6 +131,7 @@ class RecordExport {
             const records = recordsResponse.records
             const isEOF =  records.length < config.exportRowLimit;
             let contentRowsString = ''
+            let rowID = 0;
             for (let i = 0; i < records.length; i++) {
                 const fd = fs.openSync(jsonFile, 'w');
                 await fs.writeFileSync(jsonFile, contents + '\r\n');
@@ -161,13 +155,16 @@ class RecordExport {
                     });
                 });
                 writeJsonPromiseAll.push(writeJsonPromise);
-                
-                if(this._props.dirPath){
-                    const fileFolderBK = getFileSync(pathFile + '/' + this._props.dirPath);
-                    const fileDownload = this.fileExport.downloadFileByRecord(records[i], records[i].$id.value, fileFolderBK, appID);
-                    filePromiseAll.push(fileDownload);
+                if(records[i].$id) {
+                  rowID = records[i].$id.value
+                } else {
+                  rowID = i
                 }
-                
+                if(this._props.dirPath){
+                    const fileFolderBK = getFileSync(process.cwd() + '/' + this._props.dirPath);
+                    await this.fileExport.downloadFileByRecord(records[i], rowID, fileFolderBK, appID);
+                    //filePromiseAll.push(fileDownload);
+                }
             }
             offset += config.exportRowLimit
             if(isEOF) {
@@ -177,12 +174,12 @@ class RecordExport {
             
         }
         await Promise.all(writeJsonPromiseAll);
-        await Promise.all(filePromiseAll);
+        //await Promise.all(filePromiseAll);
         await fs.appendFileSync(jsonFile, '\r\n]}');
     } catch (err) {
         return Promise.resolve(err);
     }
-}
+  }
 
   getLenghtCsv(rows: Array<Array<string>>) {
     let stringInRow = '';
@@ -192,23 +189,38 @@ class RecordExport {
     return Buffer.byteLength(stringInRow);
   }
 
+  makePartialColumns(fields: any, partialFields: Array<string> = []){
+    const columns: any = {};
+    partialFields.forEach((fieldCode: string) => {
+      if(fieldCode in fields){
+        columns[fieldCode] = fields[fieldCode];
+      }
+    })
+    return columns
+  }
+
   createRecordCsvContent(record: any, fileFolder: string, header: Array<any>) {
     let csvRowData: any = {};
-    const validFileFolder = getFileSync(fileFolder + '/file');
-    csvRowData = Object.assign({}, this.parseRecordCsvContent(record, record.$id.value, validFileFolder));
+    let rowID = 0;
+    if(record.$id){
+      rowID = record.$id.value
+    }
+    csvRowData = Object.assign({}, this.parseRecordCsvContent(record, rowID, fileFolder));
     const tableDatas: Array<any> = [];
-    const tableCode: Array<string> = [];
+    const tableCode: any = [];
     let isExistTable = false;
+    let subRowCount = 1;
     Object.keys(record).forEach(key => {
       if (record[key].type === 'SUBTABLE') {
           if(record[key].value.length > 0){
+            const count = record[key].value.length;
+            subRowCount = (subRowCount < count) ? count: subRowCount;
             tableDatas.push(record[key].value);
             tableCode.push(key);
           }
         isExistTable = true;
       }
     });
-    
     if (tableDatas.length === 0) {
       if (isExistTable) {
         csvRowData['*'] = '*';
@@ -216,27 +228,44 @@ class RecordExport {
       const data = header.map(item => {
         return csvRowData[item];
       });
-      
       return [data];
     }
-    const csvRowDatas = [];
-    for (let j = 0; j < tableDatas.length; j++) {
-        const tableData = tableDatas[j];
-        for (let i = 0; i < tableData.length; i++) {
-            const csvRow = Object.assign({}, csvRowData, this.parseRecordCsvContent(tableData[i].value, record.$id.value, validFileFolder));
-            if (i === 0) {
-                csvRow['*'] = '*';
-            }
-            
-            csvRow[tableCode[j]] = tableData[i].id;
-            const jsonRow = header.map(item => {
-                return csvRow[item];
-            });
-            csvRowDatas.push(jsonRow);
-        }
+    const csvRowDatas: any = [];
+    let csvRow = Object.assign({}, csvRowData);
+    let csvRowArray: any = [];
+    let csvRowTableCodes: any = [];
+    let csvRowTableCodeArray: any = []
+    for(let rowEachTable = 0; rowEachTable < subRowCount; rowEachTable++){
     
-    }   
-   
+      for (let tableCount = 0; tableCount < tableDatas.length; tableCount++) {
+          const tableData = tableDatas[tableCount];
+            if(record.$id){
+              rowID = record.$id.value
+            } else {
+              rowID = rowEachTable;
+            }
+            if(rowEachTable < tableData.length ){
+              const csvParseContent = this.parseRecordCsvContent(tableData[rowEachTable].value, rowID, fileFolder);
+              csvRowArray[rowEachTable] = Object.assign({}, csvRowArray[rowEachTable], csvParseContent);
+              csvRowTableCodes[tableCode[tableCount]] = tableData[rowEachTable].id;
+            }
+      }
+      csvRowTableCodeArray.push(csvRowTableCodes);
+      csvRowTableCodes = [];
+    }
+
+    for(let rowNum = 0; rowNum < csvRowArray.length; rowNum++){
+        csvRowArray[rowNum] = Object.assign({}, csvRowArray[rowNum], csvRowTableCodeArray[rowNum]);
+        let csvRowNum = Object.assign({}, csvRow, csvRowArray[rowNum]);
+        if (rowNum === 0) {
+          csvRowNum['*'] = '*';
+        }
+        const jsonRow = header.map(item => {
+            return csvRowNum[item];
+        });
+        csvRowDatas.push(jsonRow);
+    }  
+  
     return csvRowDatas;
   }
 
@@ -245,18 +274,23 @@ class RecordExport {
     Object.keys(record).forEach(key => {
       let cellValue = record[key].value;
       const tmp = [];
-      let folder = fileFolder;
       switch (record[key].type) {
-        case 'UPDATED_TIME':
+        case 'STATUS':
+        case 'STATUS_ASSIGNEE':
+        case 'CATEGORY':
+          break;
         case 'MODIFIER':
-        case 'CREATED_TIME':
-        case 'RECORD_NUMBER':
         case 'CREATOR':
+          csvRowData[key] = cellValue.code;
           break;
         case 'FILE':
-          folder = getValidPath(folder + '/' + key + '_' + rowID + '/');
           for (let i = 0; i < cellValue.length; i++) {
-            const filePath = folder + cellValue[i].name;
+            let filePath = '';
+            if(this._props.dirPath){
+              filePath = util.format("%s%s%s", cellValue[i].folderPath, path.sep, cellValue[i].name)
+            } else {
+              filePath = filePath + cellValue[i].name;
+            }
             tmp.push(filePath);
           }
           csvRowData[key] = tmp.join('\n');
@@ -264,6 +298,11 @@ class RecordExport {
         case 'CHECK_BOX':
         case 'MULTI_SELECT':
           csvRowData[key] = cellValue.join('\n');
+          break;
+        case 'DROP_DOWN':
+        case 'RADIO_BUTTON':
+          cellValue = (cellValue != null) ? cellValue : '';
+          csvRowData[key] = cellValue
           break;
         case 'USER_SELECT':
         case 'ORGANIZATION_SELECT':
@@ -285,23 +324,27 @@ class RecordExport {
   }
 
   async createRecordCsvHeader(appID: number) {
-    const headers = ['$id', '$revision'];
+    let headers: Array<any> = [];
     let existSubtable = false;
-    const formFields = await this.appModule.getFormFields(appID);
-    Object.keys(formFields.properties).forEach(key => {
-      switch (formFields.properties[key].type) {
-        case 'UPDATED_TIME':
-        case 'MODIFIER':
-        case 'CREATED_TIME':
-        case 'RECORD_NUMBER':
-        case 'CREATOR':
+    const formFieldsResponse = await this.appModule.getFormFields(appID);
+    let formFields: any = {}
+    if(this._props.fields.length > 0){
+      const partialFormFields = this.makePartialColumns(formFieldsResponse.properties, this._props.fields)
+      formFields = partialFormFields;
+    } else {
+      headers = ['$id', '$revision'];
+      formFields = formFieldsResponse.properties;
+    }
+    Object.keys(formFields).forEach(key => {
+      switch (formFields[key].type) {
         case 'STATUS':
         case 'STATUS_ASSIGNEE':
+        case 'CATEGORY':
           break;
         case 'SUBTABLE':
           existSubtable = true;
           headers.push(key);
-          Object.keys(formFields.properties[key].fields).forEach(field => {
+          Object.keys(formFields[key].fields).forEach(field => {
             headers.push(field);
           });
           break;
@@ -312,7 +355,6 @@ class RecordExport {
     if (existSubtable) {
       headers.unshift('*');
     }
-
     return headers;
   }
 }
