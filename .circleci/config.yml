@@ -1,0 +1,26 @@
+version: 2.1 # use version 2.0 of CircleCI
+jobs: # a basic unit of work in a run
+  build: # runs not using `Workflows` must have a `build` job as entry poin
+    docker: # Specifies the primary container image,
+     # see circleci.com/docs/2.0/circleci-images/ for
+     # the list of pre-built CircleCI images on dockerhub.
+       - image: circleci/node:chakracore-10.13
+  steps:
+       - checkout
+       - run:
+          name: Install dependencies
+          command: |
+            npm install
+        - run:
+          name: Run build tsc to es6
+          command: |
+            npm run build
+        - run:
+          name: Compile nodejs to binaries
+          command: |
+            npm run package:all
+workflows:
+  version: 2.1
+  build_and_deploy:
+    jobs:
+      - build

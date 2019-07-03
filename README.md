@@ -82,3 +82,26 @@ Help Options:
 ```
 $ cli-kintone -a <appID> -d <domain> -u <Login Name> -p <Password>
 ```
+### Export the specified columns to csv file as Shif-JIS encoding
+```
+    $ cli-kintone -a <APP_ID> -d <FQDN> -e sjis -c "$id, name1, name2" -t <API_TOKEN> > <OUTPUT_FILE>
+```
+
+### Export and download attachment files to ./mydownloads directory
+```
+    $ cli-kintone -a <APP_ID> -d <FQDN> -t <API_TOKEN> -b mydownloads
+```
+
+## Restriction
+* The limit of the file upload size is 10 MB.
+* Client certificates cannot be used with cli-kintone.
+* The following record data cannot be retrieved: Category, Status, Field group.
+* The following fields cannot be retrieved if they are set inside a Field group: Record number, Created by, Created datetime, Updated by, Updated datetime, Blank space, Label, Border.
+
+## License
+
+GPL v2
+
+## Copyright
+
+Copyright(c) Cybozu, Inc.
