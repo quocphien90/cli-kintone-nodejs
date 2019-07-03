@@ -5,7 +5,7 @@ jobs: # a basic unit of work in a run
      # see circleci.com/docs/2.0/circleci-images/ for
      # the list of pre-built CircleCI images on dockerhub.
        - image: circleci/node:chakracore-10.13
-  steps:
+    steps:
       - checkout
       - run:
           name: Install dependencies
