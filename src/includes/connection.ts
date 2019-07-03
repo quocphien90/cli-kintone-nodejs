@@ -20,15 +20,12 @@ class Connection {
     protected _props: ConnectionProps;
 
     constructor(params: ConnectionProps) {
-       this._props = { 
-        ...{
-          appID:0,
-          domain: ''
-        }
+      this._props = { ...{
+            appID:0,
+            domain: ''
+          }, ...params
       };
-      if (params) {
-          this._props = {...this._props, ...params};
-      }
+      
     }
 
     public getKintoneConnection(): object {

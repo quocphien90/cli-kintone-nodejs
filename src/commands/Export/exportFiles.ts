@@ -7,7 +7,7 @@ const util = require('util')
 const path = require('path')
 
 type FileExportProps = {
-    connectionModule: Connection | null;
+    connectionModule: Connection;
     connection: any;
 }
 
@@ -18,16 +18,14 @@ class FileExport {
   protected _props: FileExportProps;
 
   constructor(params: FileExportProps) {
-    this._props =  { 
+  
+    this._props = {  
       ...{
-          connection: null,
-          connectionModule: null,
-          timer: new Date(),
-      }
-    }
-    if (params) {
-        this._props = {...this._props, ...params};
-    }
+      connection: null,
+      connectionModule: null,
+      timer: new Date(),
+    }, ...params};
+ 
     
     this.connection = this._props.connection;
     this.fileModule = new kintone.File(this.connection);

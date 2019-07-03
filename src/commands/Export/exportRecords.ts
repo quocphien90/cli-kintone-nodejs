@@ -11,7 +11,7 @@ const util = require('util')
 const path = require('path')
 
 type RecordExportProps = {
-    connectionModule: Connection | null;
+    connectionModule: Connection;
     encoding: string,
     query?: string,
     fields: Array<string>,
@@ -29,18 +29,15 @@ class RecordExport {
       
   constructor(params: RecordExportProps) {
     this._props = { 
-        ...{
-            encoding:'',
-            fields: [],
-            connectionModule: null,
-            timer: new Date(),
-            formatFile: 'csv',
-            query: ''
-        }
-    };
-    if (params) {
-        this._props = {...this._props, ...params};
-    }
+      ...{
+        encoding:'',
+        fields: [],
+        connectionModule: null,
+        timer: new Date(),
+        formatFile: 'csv',
+        query: ''
+    }, ...params};
+    
     
     this.connection = this._props.connectionModule.getKintoneConnection()
     this.recordModule = new kintone.Record(this.connection);
