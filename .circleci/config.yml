@@ -5,8 +5,10 @@ jobs: # a basic unit of work in a run
      # see circleci.com/docs/2.0/circleci-images/ for
      # the list of pre-built CircleCI images on dockerhub.
        - image: circleci/node:chakracore-10.13
+    working_directory: /tmp
     steps:
       - checkout
+      - run: mkdir -p workspace
       - run:
           name: Install dependencies
           command: |
@@ -21,22 +23,29 @@ jobs: # a basic unit of work in a run
             npm run package:all
       - store_artifacts:
           path: build/mac/cli-kintone
-          destination: /artifacts/cli-kintone-macos
+          destination: /build/mac/cli-kintone
       - store_artifacts:
           path: build/win32/cli-kintone.exe
-          destination: /artifacts/cli-kintone-x86.exe
+          destination: /build/win32/cli-kintone.exe
       - store_artifacts:
           path: build/win64/cli-kintone.exe
-          destination: /artifacts/cli-kintone-x64.exe
+          destination: /build/win64/cli-kintone.exe
       - store_artifacts:
           path: build/linux/cli-kintone
-          destination: /artifacts/cli-kintone-linux
+          destination: /build/linux/cli-kintone
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
+          # taken to be the root directory of the workspace.
+          root: workspace
+          # Must be relative path from root
+          paths:
+            - build
   publish-github-release:
     docker:
       - image: cibuilds/github:0.10
     steps:
       - attach_workspace:
-          at: ./artifacts
+          at: /workspace/build
       - run:
           name: "Publish Release on GitHub"
           command: |
