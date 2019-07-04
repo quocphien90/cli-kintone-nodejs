@@ -46,8 +46,7 @@ jobs: # a basic unit of work in a run
           echo "ARCHIVE_PATH=$ARCHIVE_PATH"
           echo "export ARCHIVE_PATH=$ARCHIVE_PATH" >> $BASH_ENV
       - run: |
-          tar -czvf "cli-kintone.zip" -C build/
-          ls -la
+          tar -czvf "cli-kintone.zip" -C build/ .
       - store_artifacts:
           path: build/
       - persist_to_workspace:
