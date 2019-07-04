@@ -43,33 +43,20 @@ jobs: # a basic unit of work in a run
           echo "ARCHIVE_NAME=$ARCHIVE_NAME"
           echo "export ARCHIVE_NAME=$ARCHIVE_NAME" >> $BASH_ENV
       - run: |
-          ARCHIVE_PATH="/tmp/dist/$ARCHIVE_NAME"
+          ARCHIVE_PATH="/build_tmp/build/$ARCHIVE_NAME"
           echo "ARCHIVE_PATH=$ARCHIVE_PATH"
           echo "export ARCHIVE_PATH=$ARCHIVE_PATH" >> $BASH_ENV
       
       - run: tar -czvf $ARCHIVE_PATH -C /build_tmp/build .
       - store_artifacts:
-          path: build/mac/cli-kintone
-          destination: /build/mac/cli-kintone
-      - store_artifacts:
-          path: build/win32/cli-kintone.exe
-          destination: /build/win32/cli-kintone.exe
-      - store_artifacts:
-          path: build/win64/cli-kintone.exe
-          destination: /build/win64/cli-kintone.exe
-      - store_artifacts:
-          path: build/linux/cli-kintone
-          destination: /build/linux/cli-kintone
+          path: $ARCHIVE_PATH
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
           # taken to be the root directory of the workspace.
           root: build
           # Must be relative path from root
           paths:
-            - mac/cli-kintone
-            - win32/cli-kintone.exe
-            - win64/cli-kintone.exe
-            - linux/cli-kintone
+            - $ARCHIVE_NAME
   publish-github-release:
     docker:
       - image: cibuilds/github:0.10
@@ -80,7 +67,7 @@ jobs: # a basic unit of work in a run
           name: "Publish Release on GitHub"
           command: |
             VERSION=0.1.0
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} build_tmp/build/*/*
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} build_tmp/build/*
 workflows:
   version: 2
   build_and_deploy:
