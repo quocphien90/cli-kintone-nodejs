@@ -63,7 +63,9 @@ jobs: # a basic unit of work in a run
       - image: cibuilds/github:0.10
     steps:
       - attach_workspace:
-          at: /build_tmp
+          at: /
+      - run: |
+        ls -la
       - run:
           name: "Publish Release on GitHub"
           command: |
