@@ -43,16 +43,15 @@ jobs: # a basic unit of work in a run
           echo "ARCHIVE_NAME=$ARCHIVE_NAME"
           echo "export ARCHIVE_NAME=$ARCHIVE_NAME" >> $BASH_ENV
       - run: |
-          ARCHIVE_PATH="build/$ARCHIVE_NAME"
+          ARCHIVE_PATH="binary/$ARCHIVE_NAME"
           echo "ARCHIVE_PATH=$ARCHIVE_PATH"
           echo "export ARCHIVE_PATH=$ARCHIVE_PATH" >> $BASH_ENV
       
       - run: |
-          tar -v
-          tar -czvf $ARCHIVE_PATH -C build/ .
+          tar -czvf "$ARCHIVE_PATH" -C build/ .
       - store_artifacts:
-          path: build/
-          destination: build/$ARCHIVE_NAME
+          path: binary/
+          destination: build/*
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
           # taken to be the root directory of the workspace.
