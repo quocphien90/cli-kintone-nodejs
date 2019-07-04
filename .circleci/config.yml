@@ -64,11 +64,10 @@ jobs: # a basic unit of work in a run
     steps:
       - attach_workspace:
           at: /
-      - run: |
-        ls -la
       - run:
           name: "Publish Release on GitHub"
           command: |
+            ls -la
             VERSION=0.1.0
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} build_tmp/cli-kintone.zip
 workflows:
