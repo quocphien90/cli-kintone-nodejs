@@ -1,11 +1,12 @@
 version: 2
 jobs: # a basic unit of work in a run
   build: # runs not using `Workflows` must have a `build` job as entry poin
-    executor: build-executor
     docker: # Specifies the primary container image,
      # see circleci.com/docs/2.0/circleci-images/ for
      # the list of pre-built CircleCI images on dockerhub.
        - image: circleci/node:chakracore-10.13
+         environment:
+            BINARY: cli-kintone
     working_directory: ~/build_tmp
     steps:
       - checkout
@@ -15,6 +16,11 @@ jobs: # a basic unit of work in a run
           - v1-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
+      - run: |
+          VERSION=$CIRCLE_TAG
+          if [ -z "$CIRCLE_TAG" ]; then VERSION="$CIRCLE_BRANCH-$(echo $CIRCLE_SHA1 | cut -c -7)"; fi
+          echo "VERSION=$VERSION"
+          echo "export VERSION=$VERSION" >> $BASH_ENV
       - run:
           name: Install dependencies
           command: |
@@ -31,6 +37,17 @@ jobs: # a basic unit of work in a run
           name: Compile nodejs to binaries
           command: |
             npm run package:all
+      
+      - run: |
+          ARCHIVE_NAME="$BINARY-$VERSION-$CIRCLE_JOB.tar.gz"
+          echo "ARCHIVE_NAME=$ARCHIVE_NAME"
+          echo "export ARCHIVE_NAME=$ARCHIVE_NAME" >> $BASH_ENV
+      - run: |
+          ARCHIVE_PATH="/tmp/dist/$ARCHIVE_NAME"
+          echo "ARCHIVE_PATH=$ARCHIVE_PATH"
+          echo "export ARCHIVE_PATH=$ARCHIVE_PATH" >> $BASH_ENV
+      
+      - run: tar -czvf $ARCHIVE_PATH -C /build_tmp/build .
       - store_artifacts:
           path: build/mac/cli-kintone
           destination: /build/mac/cli-kintone
@@ -54,7 +71,6 @@ jobs: # a basic unit of work in a run
             - win64/cli-kintone.exe
             - linux/cli-kintone
   publish-github-release:
-    executor: build-executor
     docker:
       - image: cibuilds/github:0.10
     steps:
