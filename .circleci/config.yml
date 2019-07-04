@@ -43,11 +43,11 @@ jobs: # a basic unit of work in a run
           echo "ARCHIVE_NAME=$ARCHIVE_NAME"
           echo "export ARCHIVE_NAME=$ARCHIVE_NAME" >> $BASH_ENV
       - run: |
-          ARCHIVE_PATH="/build/$ARCHIVE_NAME"
+          ARCHIVE_PATH="build/$ARCHIVE_NAME"
           echo "ARCHIVE_PATH=$ARCHIVE_PATH"
           echo "export ARCHIVE_PATH=$ARCHIVE_PATH" >> $BASH_ENV
       
-      - run: tar -czvf "$ARCHIVE_PATH" -C "/build" .
+      - run: tar -czvf "$ARCHIVE_PATH" -C "build" .
       - store_artifacts:
           path: $ARCHIVE_PATH
       - persist_to_workspace:
