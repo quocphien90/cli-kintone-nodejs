@@ -48,7 +48,7 @@ jobs: # a basic unit of work in a run
           echo "export ARCHIVE_PATH=$ARCHIVE_PATH" >> $BASH_ENV
       
       - run: |
-          tar -czvf ${ARCHIVE_NAME}" -C build/ .
+          tar -czvf ${ARCHIVE_NAME} -C build/ .
       - store_artifacts:
           path: build/
       - persist_to_workspace:
@@ -57,7 +57,7 @@ jobs: # a basic unit of work in a run
           root: build
           # Must be relative path from root
           paths:
-            - build/*
+            - build/ARCHIVE_NAME
   publish-github-release:
     docker:
       - image: cibuilds/github:0.10
