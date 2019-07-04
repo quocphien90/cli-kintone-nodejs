@@ -49,16 +49,16 @@ jobs: # a basic unit of work in a run
       
       - run: |
           tar -czvf "$ARCHIVE_NAME" -C build/ .
+          ls
       - store_artifacts:
           path: build/
-          destination: "build/$ARCHIVE_NAME"
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
           # taken to be the root directory of the workspace.
           root: build
           # Must be relative path from root
           paths:
-            - $ARCHIVE_NAME
+            - build/*
   publish-github-release:
     docker:
       - image: cibuilds/github:0.10
