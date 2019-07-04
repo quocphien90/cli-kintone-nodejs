@@ -48,14 +48,14 @@ jobs: # a basic unit of work in a run
       - run: |
           tar -czvf "cli-kintone.zip" -C build/ .
       - run: |
-          ls -la
+          cp cli-kintone.zip binary/cli-kintone.zip
       - store_artifacts:
           path: cli-kintone.zip
           destination: binary/cli-kintone.zip
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
           # taken to be the root directory of the workspace.
-          root: build_tmp
+          root: binary
           # Must be relative path from root
           paths:
             - cli-kintone.zip
@@ -65,13 +65,13 @@ jobs: # a basic unit of work in a run
       - image: cibuilds/github:0.10
     steps:
       - attach_workspace:
-          at: /build_tmp
+          at: /build_tmp/binary
       - run:
           name: "Publish Release on GitHub"
           command: |
             ls -la
             VERSION=0.1.0
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} build_tmp/cli-kintone.zip
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} build_tmp/binary/cli-kintone.zip
 workflows:
   version: 2
   build_and_deploy:
