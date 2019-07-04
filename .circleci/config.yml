@@ -33,33 +33,41 @@ jobs: # a basic unit of work in a run
           name: Run build tsc to es6
           command: |
             npm run build
+            mkdir -p binary
       - run:
-          name: Compile nodejs to binaries
+          name: Build linux/amd64 archive
           command: |
-            npm run package:all
-      
-      - run: |
-          ARCHIVE_NAME="$BINARY-$VERSION-$CIRCLE_JOB.tar.gz"
-          echo "ARCHIVE_NAME=$ARCHIVE_NAME"
-          echo "export ARCHIVE_NAME=$ARCHIVE_NAME" >> $BASH_ENV
-          ARCHIVE_PATH="build/$ARCHIVE_NAME"
-          echo "ARCHIVE_PATH=$ARCHIVE_PATH"
-          echo "export ARCHIVE_PATH=$ARCHIVE_PATH" >> $BASH_ENV
-      - run: |
-          tar -czvf "cli-kintone.zip" -C build/ .
-      - run: |
-          mkdir -p binary
-          cp cli-kintone.zip binary/
-      - store_artifacts:
-          path: cli-kintone.zip
-          destination: binary/cli-kintone.zip
+            npm run package:linux
+            tar -czvf "linux-x64.zip" -C build/linux/ .
+            cp linux-x64.zip binary/
+      - run:
+          name: Build darwin/amd64 archive
+          command: |
+            npm run package:mac
+            tar -czvf "macos-x64.zip" -C build/mac/ .
+            cp macos-x64.zip binary/
+      - run:
+          name: Build windows/amd64 archive
+          command: |
+            npm run package:win64
+            tar -czvf "windows-x64.zip" -C build/win64/ .
+            cp windows-x64.zip binary/
+      - run:
+          name: Build windows/386 archive
+          command: |
+            npm run package:win32
+            tar -czvf "windows.zip" -C build/win32/ .
+            cp windows.zip binary/
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
           # taken to be the root directory of the workspace.
           root: binary
           # Must be relative path from root
           paths:
-            - cli-kintone.zip
+            - linux-x64.zip
+            - macos-x64.zip
+            - windows-x64.zip
+            - windows.zip
 
   publish-github-release:
     docker:
@@ -70,8 +78,7 @@ jobs: # a basic unit of work in a run
       - run:
           name: "Publish Release on GitHub"
           command: |
-            VERSION=0.1.0
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /build_tmp/binary/cli-kintone.zip
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} /build_tmp/binary/*
 workflows:
   version: 2
   build_and_deploy:
