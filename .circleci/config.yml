@@ -70,9 +70,7 @@ jobs: # a basic unit of work in a run
       - run:
           name: "Publish Release on GitHub"
           command: |
-            echo $GITHUB_TOKEN
-            VERSION=0.2.0
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /build_tmp/binary/cli-kintone.zip
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} --replace 0.2.0 /build_tmp/binary/cli-kintone.zip
 workflows:
   version: 2
   build_and_deploy:
