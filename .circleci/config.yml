@@ -59,7 +59,7 @@ jobs: # a basic unit of work in a run
           root: binary
           # Must be relative path from root
           paths:
-            - binary/cli-kintone.zip
+            - cli-kintone.zip
 
   publish-github-release:
     docker:
