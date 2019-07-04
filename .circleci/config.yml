@@ -48,7 +48,8 @@ jobs: # a basic unit of work in a run
       - run: |
           tar -czvf "cli-kintone.zip" -C build/ .
       - run: |
-          cp cli-kintone.zip binary/cli-kintone.zip
+          mkdir -p binary
+          cp cli-kintone.zip binary/
       - store_artifacts:
           path: cli-kintone.zip
           destination: binary/cli-kintone.zip
