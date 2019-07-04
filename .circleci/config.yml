@@ -46,7 +46,7 @@ jobs: # a basic unit of work in a run
           echo "ARCHIVE_PATH=$ARCHIVE_PATH"
           echo "export ARCHIVE_PATH=$ARCHIVE_PATH" >> $BASH_ENV
       - run: |
-          tar -czvf ${ARCHIVE_NAME} -C build/
+          tar -czvf "${ARCHIVE_NAME}" -C build/
           ls -la
       - store_artifacts:
           path: build/
