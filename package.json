@@ -31,7 +31,7 @@
     "@cybozu/eslint-config": "5.2.0",
     "@types/csv-stringify": "1.4.3",
     "@types/inquirer": "6.0.3",
-    "@types/node": "12.6.3",
+    "@types/node": "12.6.8",
     "eslint": "6.0.1",
     "pkg": "4.4.0",
     "typescript": "3.5.3"
