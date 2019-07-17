@@ -19,7 +19,7 @@
   "author": "kintone",
   "license": "MIT",
   "dependencies": {
-    "@kintone/kintone-js-sdk": "^0.3.1",
+    "@kintone/kintone-js-sdk": "^0.4.0",
     "chalk": "^2.4.2",
     "commander": "^2.20.0",
     "csv-stringify": "^5.3.0",
