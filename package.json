@@ -28,7 +28,7 @@
     "inquirer": "^6.4.1"
   },
   "devDependencies": {
-    "@cybozu/eslint-config": "6.0.1",
+    "@cybozu/eslint-config": "10.0.3",
     "@types/csv-stringify": "1.4.3",
     "@types/inquirer": "6.0.3",
     "@types/node": "12.6.8",
