@@ -71,7 +71,7 @@ jobs: # a basic unit of work in a run
 
   publish-github-release:
     docker:
-      - image: cibuilds/github:0.12
+      - image: cibuilds/github:0.13
     steps:
       - attach_workspace:
           at: /build_tmp/binary
